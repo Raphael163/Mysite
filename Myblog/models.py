@@ -2,26 +2,6 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
-# Делаем модель нашего БЛога
-# НУжно подумать что там нам для этого нужно.
-# заглавие
-# Текст
-# Автор всего это дела
-# Дата создания всего это дела
-# Дата публикации
-
-
-# Post
-# --------
-
-# title - заглавие
-# text - текст
-# author - автор
-# created_date - Дата создания
-# published_date - Дата публикации
-
-# Попробуем написать модель
-# эти модели записываются в базу данных db.sqlite3
 
 class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -37,4 +17,18 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
-# ПОСле создания модели
+    class Meta:
+        verbose_name = "Пост"
+        verbose_name_plural = "пост"
+
+
+class Task(models.Model):
+    title = models.CharField('Название', max_length=50)
+    task = models.TextField("Описание")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Задача"
+        verbose_name_plural = "Задачи"
