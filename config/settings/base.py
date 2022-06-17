@@ -10,12 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import environ
 import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-TEMPLATES_DIRS = os.path.join(BASE_DIR, "templates")
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+ROOT_DIR = environ.Path(__file__) - 3
+
+env = environ.Env()
+env.read_env(str(ROOT_DIR.path('.env')))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -24,23 +28,30 @@ TEMPLATES_DIRS = os.path.join(BASE_DIR, "templates")
 SECRET_KEY = 'django-insecure-aelf+5^oj%=ks0xb_jvx(^zkq-6*jk!4qf=vp$@hdgjbh2**)a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DJANGO_DEBUG", False)
 
 ALLOWED_HOSTS = []
 
 
 # Application definition
-
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # My app
+]
+
+THIRD_PARTY_APPS = [
+]
+
+LOCAL_APPS = [
     'Myblog',
 ]
+
+# https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,14 +61,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Myblog.middleware.MyBlog',
 ]
 
-ROOT_URLCONF = 'main.urls'
+ROOT_URLCONF = 'config.urls'
 
+TEMPLATES_DIR = str(ROOT_DIR.path("templates"))
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATES_DIRS],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,7 +83,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'main.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
@@ -122,12 +135,31 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
+# STATIC
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#static-root
+STATIC_ROOT = str(ROOT_DIR.path('static'))
+# https://docs.djangoproject.com/en/dev/ref/settings/#static-url
+STATIC_URL = '/static/'
+# https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
+STATICFILES_DIRS = [
+    str(ROOT_DIR.path('staticfiles'))
+]
+# https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# MEDIA
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#media-root
+MEDIA_ROOT = str(ROOT_DIR.path('files', 'media'))
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ALLOW_ANOMIM_TO_CREATE = env.bool('ALLOW_ANOMIM_TO_CREATE', False)

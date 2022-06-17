@@ -1,4 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponse
+from django.views.generic import TemplateView
+
 from .models import Task
 from .models import Post
 from .forms import TaskForm
@@ -14,21 +16,46 @@ def about(request):
     return render(request, "Myblog/about.html", {"title": 'Страница о нас', 'posts': posts})
 
 
-def create(request):
-    error = ""
-    if request.method == "POST":
+# вместо  create
+class CreateView(TemplateView):
+    template_name = 'Myblog/create.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = TaskForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
         form = TaskForm(request.POST)
+        context = self.get_context_data(**kwargs)
         if form.is_valid():
             form.save()
 
         else:
-            error = "Форма неверна"
+            context['error'] = "Форма неверна"
+        context['form'] = TaskForm()
+        return self.render_to_response(context)
 
-    form = TaskForm
-    context = {
-        "form": form,
-        "error": error
-    }
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+
+        return self.render_to_response(context)
+
+
+# неиспользуемое
+def create(request):
+    context, error = {}, ""
+    if request.method == "POST":
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            context['error'] = "Форма неверна"
+        context['form'] = TaskForm()
+
+    else:
+        context['form'] = TaskForm()
+
     return render(request, "Myblog/create.html", context)
 
 # Подключение шаблонов без модели
